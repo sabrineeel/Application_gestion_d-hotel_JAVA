@@ -44,18 +44,6 @@ public class UserAuthentication {
 
 
 
-    // Method to recover account if the user forgets the password
-    public boolean ForgetPassword(String username, String email) {
-    // Check if the username exists and if the provided email matches the stored email
-    return userInfoMap.containsKey(username) && userInfoMap.get(username).getEmail().equals(email); 
-    } 
-
-
-
-
-
-
-
     private static class UserInfo {
         private String name;
         private String familyName;
