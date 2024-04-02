@@ -3,14 +3,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 enum Gender {
-    Women,men;
+    WOMEN,MEN;
 }
 public class UserAuthentication {
     protected Map<String, String> LoginInfo; // Map to store username (or email) and password
     protected Map<String, UserInfo> userInfoMap; // Map to store user information
     protected Map<String, AdminInfo> adminInfoMap; // Map to store admin information
     protected Gender gender;
+    protected String currentUsername;
 
+    // Méthode pour enregistrer le nom d'utilisateur actuellement connecté
+    public void setCurrentUsername(String username) {
+    this.currentUsername = username;
+    }
+
+    // Méthode pour obtenir le nom d'utilisateur actuellement connecté
+    public String getCurrentUsername() {
+    return currentUsername;
+    }
     public UserAuthentication() {
         LoginInfo = new HashMap<>();
         userInfoMap = new HashMap<>();
@@ -18,18 +28,13 @@ public class UserAuthentication {
     }
 
 
-
-    
     // Method to sign up a new user
     public void SignUp(String username, String password, String name, String familyName, Date date, String address, String email ,String phoneNumber , Gender gender) {
-       
         // Store username and password
         LoginInfo.put(username, password);
-
         // Store user information
         userInfoMap.put(username, new UserInfo(name, familyName, date, address, email, gender, phoneNumber));
     }
-
 
 
 
@@ -41,16 +46,14 @@ public class UserAuthentication {
 
 
 
-
-
-    private static class UserInfo {
-        private String name;
-        private String familyName;
-        private Date date;
-        private String address;
-        private String email;
-        private String phoneNumber;
-        private Gender gender;
+    protected static class UserInfo {
+        protected String name;
+        protected String familyName;
+        protected Date date;
+        protected String address;
+        protected String email;
+        protected String phoneNumber;
+        protected Gender gender;
 
         public UserInfo(String name, String familyName, Date date, String address, String email , Gender gender, String phoneNumber) {
             this.name = name;
@@ -123,8 +126,6 @@ public class UserAuthentication {
 
 
 
-
-
      // Method to sign up a new admin
      public void SignUpAdmin(String username, String password, String name, String familyName, Date date, String address, String email, String phoneNumber, Gender gender, String adminRole) {
         // Store username and password
@@ -134,8 +135,8 @@ public class UserAuthentication {
         adminInfoMap.put(username, new AdminInfo(name, familyName, date, address, email, gender, phoneNumber,adminRole ));
     }
 
-    private static class AdminInfo extends UserInfo {
-        private String adminRole;
+    protected static class AdminInfo extends UserInfo {
+        protected String adminRole;
         public AdminInfo(String name, String familyName, Date date, String address, String email, Gender gender, String phoneNumber, String adminRole) {
             super(name, familyName, date, address, email, gender, phoneNumber);
             this.adminRole = adminRole;
@@ -144,6 +145,4 @@ public class UserAuthentication {
             return adminRole;}
 
     }
-
-
 }
