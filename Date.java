@@ -71,13 +71,13 @@ public class Date {
 
 
     // Méthode pour vérifier si une année est bissextile
-    private static boolean isLeapYear(int year) {
+    protected static boolean isLeapYear(int year) {
         return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
     }
 
 
     // Méthode pour calculer la date après un nombre spécifié de jours
-    public static String calculateDateAfterDays(int year, int month, int day, int daysToAdd) {
+    public  String calculateDateAfterDays(int year, int month, int day, int daysToAdd) {
 
         // Calculer le nombre total de jours à ajouter
         int totalDays = daysToAdd;
