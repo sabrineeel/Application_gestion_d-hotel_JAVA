@@ -1,72 +1,19 @@
 package POO;
 import java.util.ArrayList;
 import java.util.Scanner;
+
 public class Client {
-    protected String firstname,lastname;
-    protected Date dateofBirth;
-    protected String email;
-    protected String address;
-    protected String phoneNumber;
+    protected UserAuthentication userAuthentication;
     protected ArrayList<Reservation> myReservations;
     
     public Client() {   
     }
 
-    public Client(String firstname, String lastname, Date dateofBirth, String email, String address, String phoneNumber,
-            ArrayList<Reservation> myReservations) {
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.dateofBirth = dateofBirth;
-        this.email = email;
-        this.address = address;
-        this.phoneNumber = phoneNumber;
+    public Client( UserAuthentication userAuthentication,ArrayList<Reservation> myReservations) {
+        this.userAuthentication = userAuthentication;
         myReservations = new ArrayList<>();
     }
-    public String getFirstname() {
-        return firstname;
-    }
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-    public String getLastname() {
-        return lastname;
-    }
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public Date getDateofBirth() {
-        return dateofBirth;
-    }
-
-    public void setDateofBirth(Date dateofBirth) {
-        this.dateofBirth = dateofBirth;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
+   
 
     public ArrayList<Reservation> getMyReservations() {
         return myReservations;
@@ -80,12 +27,12 @@ public class Client {
 
 
     // Méthode pour créer un nouveau compte client en utilisant UserAuthentication
-    public void CreatAcc(UserAuthentication auth,String username, String password,String firstname,String Lastname ,Date dateofBirth ,String eemail,String address ,String phoneNumber,Gender gender){
+    public void CreatAcc(String username, String password,String firstname,String Lastname ,Date dateofBirth ,String email,String address ,String phoneNumber,Gender gender){
 
          // Vérifier si l'authentification n'est pas nulle et si les informations fournies sont valides
-         if (auth != null && isValidInfo(username, password, firstname, Lastname, dateofBirth, eemail, address)) {
+         if (userAuthentication != null && isValidInfo(username, password, firstname, Lastname, dateofBirth, email, address,phoneNumber)) {
             // Appeler la méthode SignUp de UserAuthentication pour créer le compte
-            auth.SignUp(username, password, firstname, Lastname, dateofBirth, address, eemail, phoneNumber, gender);
+            userAuthentication.SignUp(username, password, firstname, Lastname, dateofBirth, address, email, phoneNumber, gender);
             System.out.println("Compte client créé avec succès !");
         } else {
             System.out.println("Impossible de créer le compte client. Veuillez fournir des informations valides.");
@@ -96,7 +43,7 @@ public class Client {
 
 
     // Méthode pour valider les informations fournies par l'utilisateur
-    private boolean isValidInfo(String username, String password, String firstName, String lastName, Date dateOfBirth, String eemail, String address) {
+    protected boolean isValidInfo(String username, String password, String firstName, String lastName, Date dateOfBirth, String email, String address,String phoneNumber) {
          // Vérifier si le username contient au minimum 4 caractères
         if (username.length() < 4) {
             System.out.println("Le nom d'utilisateur doit contenir au minimum 4 caractères.");
@@ -108,9 +55,9 @@ public class Client {
             System.out.println("Le mot de passe doit contenir au minimum 8 caractères.");
             return false;
         }
-         // Vérifier si l'eemail se termine par "@gemail.com"
-        if (!eemail.endsWith("@gemail.com")) {
-            System.out.println("L'eemail n'est pas valide.");
+         // Vérifier si l'email se termine par "@gemail.com"
+        if (!email.endsWith("@gemail.com")) {
+            System.out.println("L'email n'est pas valide.");
             return false;
         }
 
@@ -182,7 +129,7 @@ public class Client {
 
 
     //Method to transform date string into date 
-    private Date parseDateString(String dateString) {
+    protected Date parseDateString(String dateString) {
         try {
             String[] parts = dateString.split("-");
             int year = Integer.parseInt(parts[0]);
@@ -222,5 +169,33 @@ public class Client {
 
     
     public void EditAcc(){}
+
+    public String getEmail() {
+        // Vérifier si l'utilisateur a été authentifié
+        if (userAuthentication != null) {
+            // Obtenez le nom d'utilisateur associé à l'utilisateur actuellement authentifié
+            String username = userAuthentication.getCurrentUsername(); 
+            // Vérifier si le nom d'utilisateur existe dans la carte des informations utilisateur
+            if (userAuthentication.userInfoMap.containsKey(username)) {
+                // Récupérer l'objet UserInfo associé au nom d'utilisateur
+                UserAuthentication.UserInfo userInfo = userAuthentication.userInfoMap.get(username);
+                // Renvoyer l'e-mail associé à UserInfo
+                return userInfo.getEmail();
+            } else {
+                System.out.println("User information not found for the authenticated user.");
+                return null; // Ou lancez une exception appropriée selon votre cas d'utilisation
+            }
+        } else {
+            System.out.println("User authentication information is missing.");
+            return null; // Ou lancez une exception appropriée selon votre cas d'utilisation
+        }
+    }
+    
+
+
+    //Methode pour Afficher l'historique des réservations 
+    public void History(){
+
+    }
 
 }
