@@ -1,4 +1,3 @@
-
 package system.gestion.d.hotel;
 
 public class Page3 extends javax.swing.JFrame {
