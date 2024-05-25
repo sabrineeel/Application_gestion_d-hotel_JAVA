@@ -1,209 +1,196 @@
-
-package javaapplication3;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+package modele;
 import java.util.ArrayList;
-import javaapplication3.Room.Situation;
-import javaapplication3.UserInfo.Gender;
-
+import java.util.Scanner;
+import java.util.HashMap;
+import java.util.Map;
+import modele.*;
 
 public class Admin {
-    
-  
+    public enum RoomModel {
+        ADULTS, ADULTS1, ADULTS2, ADULTS3;
+    }
+    protected Map<Integer, Room> roomMap = new HashMap<>();
+    protected ArrayList<UserInfo> clientList = new ArrayList<>();
 
-    protected ArrayList<UserInfo> clientList;
-    protected ArrayList<Room> roomList;
-    protected ArrayList<Resarvation> reservationList;
     protected String username;
     protected String password;
-    protected String firstname;
-    protected String lastname;
-    protected Date dateofBirth;
-    protected String email;
-    protected String addresse;
-    protected String phoneNumber;
-    protected String adminRole;
+    protected RoomD roomD;
 
-//constrecteur parametree:
-    public Admin(String username, String passwrod, Date dateofBirth, String firstname, String lastename, Gender gender, String mail, String adresse) {
-        clientList = new ArrayList<>();
-        roomList = new ArrayList<>();
-        reservationList = new ArrayList<>();
-        this.password = passwrod;
+    // Parameterized constructor
+    public Admin(String username, String password) {
         this.username = username;
-        this.firstname = firstname;
-        this.lastname = lastename;
-        this.dateofBirth = dateofBirth;
-        this.email = mail;
-        this.addresse = adresse;
-        this.phoneNumber = phoneNumber;
-        this.adminRole = adminRole;
+        this.password = password;
+        this.roomD = new RoomD();
     }
 
-    public Admin() {}
-
-
-
-    private boolean isValidInfo(String username, String password) {
-        // Vérifier si le username contient au minimum 4 caractères
-        if (username.length() < 4) {
-            System.out.println("Le nom d'utilisateur doit contenir au minimum 4 caractères.");
-            return false;
-        }
-
-        // Vérifier si le password contient au minimum 8 caractères
-        if (password.length() < 8) {
-            System.out.println("Le mot de passe doit contenir au minimum 8 caractères.");
-            return false;
-        }
-
-        return true;
+    // Default constructor
+    public Admin() {
+        this.roomD = new RoomD();
     }
+
+   
+    public boolean authenticateAdmin(String enteredUsername, String enteredPassword) {
+        return "sabrinel".equals(enteredUsername) && "sabrinel".equals(enteredPassword);
+    }
+  
     
-
-    // Méthode pour créer un nouveau compte administrateur en utilisant UserAuthentication
-    public void CreateAccount(UserAuthentication auth, String username, String password,Gender gender) {
-        // Vérifier si l'authentification n'est pas nulle et si les informations fournies sont valides
-        if (auth != null && isValidInfo(username, password)) {
-            // Appeler la méthode SignUp de UserAuthentication pour créer le compte
-            auth.SignUpAdmin(username, password, firstname, lastname, dateofBirth, addresse, email, phoneNumber,gender,adminRole);
-            System.out.println("Compte administrateur créé avec succès !");
-        } else {
-            System.out.println("Impossible de créer le compte administrateur. Veuillez fournir des informations valides.");
-        }
+    public void addRoom(Room.Type type, Room.RoomModel model) {
+        Room room = new Room(type, model);
+        roomD.addRoom(room);
     }
 
-
-    //Method to edit reservations
-    public boolean EditReservationRequests(Resarvation oldreservation , Resarvation newreservation,Room room){
-        if (oldreservation.getStartDate().compareDateToToday(oldreservation.startDate) == -1) {
-            // Check if the new reservation room is free
-            if (newreservation.room.situation == Situation.FREE) {
-                // Check if the new reservation dates conflict with existing reservations
-                boolean isConflict = checkReservationConflict(newreservation);
-                if (!isConflict) {
-                oldreservation.setStartDate(newreservation.getStartDate());
-                oldreservation.setEndDate(newreservation.getEndDate()); 
-                return true;}
-                else {
-                HandleReservationException(newreservation, "Reservation cannot be accepted. New dates conflict with existing reservations.");
-                return false;
-                }
-            }else{
-            HandleReservationException(newreservation, "Reservation cannot be accepted. Room already reserved.");
-            return false;
-            }
-        }else{
-        HandleReservationException(newreservation, "Reservation cannot be edited. It has already started.");
-        return false;
+public boolean updateRoomSituation(int roomNumber, Room.Type roomType, Room.RoomModel roomModel) {
+    try {
+        // Obtenez la chambre en fonction de son numéro
+        Room room = roomD.getRoom(roomNumber);
+        if (room == null) {
+            throw new RoomD.RoomModificationException("Room not found.");
         }
-    }
 
-
-    // Method to check if the new reservation dates conflict with existing reservations
-    private boolean checkReservationConflict(Resarvation newreservation) {
-        for (Resarvation reservation : reservationList) {
-            if (newreservation.getStartDate().compareTo(reservation.getEndDate()) <= 0
-                    && newreservation.getEndDate().compareTo(reservation.getStartDate()) >= 0) {
-                return true; // Conflict found
-            }
-        }
-        return false; // No conflict found
-    }
-
-
-    public boolean AcceptReservation(Resarvation reservation,Room room){
-        if (reservation.getStartDate().compareDateToToday(reservation.startDate)== -1){
-            if (room.getSituation()== Situation.FREE){
-            reservationList.add(reservation);
-            System.out.println("Reservation accepted!");
-            room.UpdateRoom(room);
-            return true;}
-        else {
-        // Handle room already reserved
-        HandleReservationException(reservation, "Reservation cannot be accepted. Room already reserved.");
-        declineReservation(reservation, room);
-        return false;
-        }
-        }else {
-        HandleReservationException(reservation, "Reservation cannot be accepted. Please make the reservation at least one day in advance.");
-        declineReservation(reservation , room);
-        return false;
-        }
-    }
-
-
-    public boolean CancelReservation(Resarvation reservation,Room room){
-        if (reservation.getStartDate().compareDateToToday(reservation.startDate)== -1){
-        declineReservation(reservation , room);
-        System.out.println("Reservation canceled.");
-        return true;
-        }else {
-        HandleReservationException(reservation, "Reservation cannot be canceled. It has already started.");
-        return false;
-        }
-    }
-
-
-    public void declineReservation(Resarvation reservation,Room room){
-        reservationList.remove(reservation);
-        room.setSituation(Situation.FREE);
-    }
-
-
-    // Méthode pour gérer les exceptions liées aux réservations
-    public void HandleReservationException(Resarvation reservation, String errorMessage){
-        // Log the error
-        logError("Reservation Exception: " + errorMessage);
+        // Mettez à jour la chambre avec les nouvelles valeurs de type et de modèle
+        roomD.updateRoom(room, roomType, roomModel);
         
-        // Enregistrement de l'erreur dans un journal
-        logError(errorMessage);
-         // Envoi de notifications aux administrateurs ou aux clients concernés
-         sendNotification(reservation.getClient().getEmail(), errorMessage);
-
+        System.out.println("Room updated successfully!");
+        return true;
+        
+    } catch (IllegalArgumentException e) {
+        System.out.println("Invalid room type or model!");
+        return false;
+    } catch (RoomD.RoomModificationException e) {
+        System.out.println(e.getMessage());
+        return false;
     }
+}
 
-    // Method to handle room exceptions
-    public void HandleRoomException(Room room, String errorMessage){
-        // Log the error
-        logError("Room Exception: " + errorMessage);
-
-        // Enregistrement de l'erreur dans un journal
-        logError(errorMessage);
-
-        // Envoi de notifications aux administrateurs ou aux clients concernés
-        sendNotification(getAdminEmail(), errorMessage);
-    }
-
-
-    private void logError(String errorMessage) {
-        try {
-            // Append the error message to a log file
-            FileWriter fileWriter = new FileWriter("error_log.txt", true);
-            PrintWriter printWriter = new PrintWriter(fileWriter);
-            printWriter.println(errorMessage);
-            printWriter.close();
-        } catch (IOException e) {
-            // Handle IOException if file writing fails
-            System.out.println("Error occurred while logging the error: " + e.getMessage());
-        }
+public boolean deleteRoom(int roomNumber) {
+    try {
+        // Obtenez la chambre en fonction de son numéro
+        Room room = roomD.getRoom(roomNumber);
+        if (room == null) {
+            throw new RoomD.RoomModificationException("Room not found.");
         }
 
+        // Supprimez la chambre de la liste des chambres disponibles
+        roomD.deleteRoom(room);
+        
+        System.out.println("Room deleted successfully!");
+        return true;
+        
+    } catch (RoomD.RoomModificationException e) {
+        System.out.println(e.getMessage());
+        return false;
+    }
+}
+/* 
+ private void manageReservations() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Reservation Management Menu:");
+        System.out.println("1. Add Reservation");
+        System.out.println("2. Update Reservation");
+        System.out.println("3. Delete Reservation");
+        System.out.println("Enter your choice:");
+        int choice = scanner.nextInt();
 
-    // Method to send notifications via email
-    private void sendNotification(String email, String message) {
-        // Logic to send an email notification to the specified email address with the error message
-        // This method could use a library to send emails or call an email service
-        System.out.println("Notification sent to: " + email + "\nMessage: " + message);
+        switch (choice) {
+            case 1:
+                break;
+            case 2:
+                           break;
+            case 3:
+
+                break;
+            default:
+                System.out.println("Invalid choice.");
+        }
+        scanner.close();
+    }
+   
+  public void displayRooms() {
+        System.out.println("Existing rooms:");
+        for (Room room : roomD.getAllRooms()) {
+            System.out.println(room);
+        }
+    }/*
+    private void makeReservation() {
+        
+
+
     }
 
-    // Méthode pour obtenir l'email de l'administrateur
-    private String getAdminEmail() {
-    // Logique pour récupérer l'email de l'administrateur à partir de la configuration ou d'une base de données
-    return "admin@example.com";
-}
-}
+    private void updateReservation(String reservationId, Date today, Date newStartDate, Date newEndDate, int newNumberOfAdults, int newNumberOfChildren, Room.Type newRoomType, Room.RoomModel newRoomModel, RoomD roomD) {
+        // Rechercher la réservation par son ID
+        Reservation reservation = findReservationById(reservationId);
+        if (reservation == null) {
+            System.out.println("La réservation avec l'ID spécifié n'existe pas.");
+            return;
+        }
     
+        // Vérifier si la réservation peut être modifiée
+        if (reservation.canModifyReservation(reservation,today, newStartDate, newEndDate, newNumberOfAdults, newNumberOfChildren, newRoomType, newRoomModel, roomD)) {
+            // Mettre à jour les informations de la réservation
+            reservation.setStartDate(newStartDate);
+            reservation.setEndDate(newEndDate);
+            reservation.setNumberOfAdults(newNumberOfAdults);
+            reservation.setNumberOfChildren(newNumberOfChildren);
+            reservation.getRoom().setType(newRoomType);
+            reservation.getRoom().setModel(newRoomModel);
     
+            System.out.println("La réservation a été modifiée avec succès pour l'utilisateur : " + reservation.getClient().getName());
+        } else {
+            // La réservation ne peut pas être modifiée, lancer une exception
+            throw new RuntimeException("La réservation ne peut pas être modifiée.");
+        }
+    }
+    
+    private void cancelReservation(String reservationId, Date today) {
+        // Trouver la réservation par son ID
+        Reservation reservation = findReservationById(reservationId);
+        if (reservation == null) {
+            System.out.println("La réservation avec l'ID spécifié n'existe pas.");
+            return;
+        }
+        // Vérifier si la réservation peut être annulée
+        if (reservation.CancelReservation(reservation, today)) {
+            // Récupérer le client associé à la réservation
+            UserInfo client = reservation.getClient();
+            // Supprimer la réservation de la liste des réservations du client
+            client.getReservations().remove(reservationId);
+            try {
+                // Libérer la chambre associée à la réservation
+                roomD.freeRoom(reservation.getRoom());
+                System.out.println("La réservation a été annulée avec succès pour l'utilisateur : " + client.getName());
+            } catch (RoomD.RoomModificationException e) {
+                System.out.println("Erreur : " + e.getMessage());
+            }
+        } else {
+            // La réservation ne peut pas être annulée, lancer une exception
+            throw new RuntimeException("La réservation ne peut pas être annulée.");
+        }
+    }
+    
+
+
+    private Reservation findReservationById(String reservationId) {
+        for (UserInfo client : clientList) {
+            Map<String, Reservation> reservations = client.getReservations();
+            if (reservations.containsKey(reservationId)) {
+                return reservations.get(reservationId);
+            }
+        }
+        return null; // Aucune réservation trouvée avec l'ID spécifié
+    }
+
+
+    // Assuming RoomD class has a method to get room by number
+    private Room getRoom(int roomNumber) {
+        return roomMap.get(roomNumber);
+    }
+
+    public void displayRooms() {
+        System.out.println("Existing rooms:");
+        for (Room room : roomD.getAllRooms()) {
+            System.out.println(room);
+        }
+    } */
+}
 

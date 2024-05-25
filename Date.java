@@ -1,7 +1,8 @@
-package POO;
+package modele;
 import java.util.Calendar;
 
 public class Date {
+
     protected int year,month,day;
 
     public Date(int year, int month, int day) {
@@ -71,13 +72,13 @@ public class Date {
 
 
     // Méthode pour vérifier si une année est bissextile
-    protected static boolean isLeapYear(int year) {
+    private static boolean isLeapYear(int year) {
         return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
     }
 
 
     // Méthode pour calculer la date après un nombre spécifié de jours
-    public  String calculateDateAfterDays(int year, int month, int day, int daysToAdd) {
+    public static String calculateDateAfterDays(int year, int month, int day, int daysToAdd) {
 
         // Calculer le nombre total de jours à ajouter
         int totalDays = daysToAdd;
@@ -182,6 +183,33 @@ public class Date {
         return Integer.compare(this.day, date.day);
     }
 
+    
+    public boolean after(Date date) {
+        // Utilisez la méthode compareTo pour vérifier si l'objet Date actuel est postérieur à la date donnée
+        return this.compareTo(date) > 0;
+    }
 
+        // Méthode pour vérifier si une date est avant une autre date
+    public boolean before(Date date) {
+        // Utilisez la méthode compareTo pour vérifier si l'objet Date actuel est antérieur à la date donnée
+        return this.compareTo(date) < 0;
+    }
+
+    public static Date valueOf(String dateString) {
+        // Diviser la chaîne par les tirets pour obtenir les parties année, mois et jour
+        String[] parts = dateString.split("-");
+        if (parts.length != 3) {
+            throw new IllegalArgumentException("La chaîne de date doit être au format 'yyyy-mm-dd'.");
+        }
+        int year = Integer.parseInt(parts[0]);
+        int month = Integer.parseInt(parts[1]);
+        int day = Integer.parseInt(parts[2]);
+        return new Date(year, month, day);
+    }
+
+
+  
+    
 }
+
 
